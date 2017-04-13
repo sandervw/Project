@@ -1,0 +1,52 @@
+<html>
+<head>
+<!--Stylesheet Imports -->
+<link rel="stylesheet" href="css\style.css"/>
+<link rel="stylesheet" href="css\creator.css"/>
+<!-- Bootstrap Stylesheet Import -->
+<link rel="stylesheet" href="js\bootstrap-3.3.7-dist\css\bootstrap.css"/>
+<!-- JQuery UI Stylesheet Import -->
+<link rel="stylesheet" href="js\jquery-ui-1.12.1\jquery-ui.css"/>
+
+<!-- JQuery Javascript -->
+<script src="js\jquery-3.1.1.min.js"></script>
+<!-- JQuery UI Javascript -->
+<script src="js\jquery-ui-1.12.1\jquery-ui.js"></script>
+<!-- JSON Javascript Import -->
+<script src="js\json2.js"></script>
+<!-- Bootstrap Javascript Import -->
+<script src="js\bootstrap-3.3.7-dist\js\bootstrap.js" ></script>
+<!-- Other Javascript Import -->
+<script src="js\floating-1.12.js" ></script>
+<script src="js\project.js" ></script>
+</head>
+<body>
+	<div class="row">
+		<div class="col-xs-12">
+			<canvas id="canvas" width="200" height="100" style="border:1px solid #000000;"></canvas>
+		</div>
+	</div>
+
+	<div id="floatingbar">
+		<img id="Mouse" src="images\builder\mouseicon.png" height="64" width="64" vspace="10"></img>
+		<img id="Add" src="images\builder\moduleicon.png" height="64" width="64" vspace="10"></img>
+		<img id="Info" src="images\builder\infoicon.png" height="64" width="64" vspace="10"></img>
+		<img id="Lines" src="images\builder\linesicon.png" height="64" width="64" vspace="10"></img>
+		<img id="Save" src="images\builder\saveicon.png" height="64" width="64" vspace="10"></img>
+	</div>
+	
+	<div id="infopanebox">
+			<Label>Is start?</label> <input id="startbox" type="checkbox" name="is_start" value="Is start?"></input><br>
+			<Label>Tile text</label><input id="textbox" type="text"></input>
+			<Label>Point value</label><input id="pointvalbox" type="number"></input>
+			<Label>Time (seconds)</label><input id="timebox" type="number"></input>
+			<Label>Image</label><button id="imagebox2" onclick="alert('hit')"></button>
+	</div>
+	
+	<div id="infopaneline">
+			<Label>Is timeout?</label> <input type="checkbox" id="is_timeout" name="is_timeout" value="Is timeout?"></input><br>
+			<Label>Button text</label><input id="nexttxt" type="text"></input>
+	</div>
+	
+</body>
+</html>
