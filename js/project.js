@@ -9,6 +9,20 @@ $(document).ready(function(){
 	var ghostcanvas;// we use a fake canvas to draw individual shapes for selection testing
 	var gctx; // fake canvas context
 	
+	var serverImg;
+	serverImg = new Image();
+	serverImg.src = "images/builder/servericon.png";
+	var moduleImg;
+	moduleImg = new Image();
+	moduleImg.src = "images/builder/moduleicon.png";
+	var lightImg;
+	lightImg = new Image();
+	lightImg.src = "images/builder/lighticon.png";
+	
+	var floorPlan;
+	floorPlan = new Image();
+	floorPlan.src = "images/tempFloorPlan.jpg";
+	
 	canvas.height = window.innerHeight;
 	canvas.width = window.innerWidth;
 	canvas.addEventListener("click", takeAction);
@@ -91,12 +105,8 @@ $(document).ready(function(){
 	}	
 	
 	function Box(){
-		this.type = "box";
+		this.type = "module";
 		this.name = "room" + roomnum;
-		this.scentext = "";
-		this.points = 0;
-		this.time = 10;
-		this.startroom = false;
 		this.x = 0;
 		this.y = 0;
 		this.w = 1; 
@@ -105,15 +115,13 @@ $(document).ready(function(){
 		this.midy = this.y + this.h / 2;		
 		this.fill = '#444444';
 		this.lines = [];
-		this.isFinal = false;
-		this.imgpath = "";
-		this.expirename = "";
 		
 		roomnum = roomnum + 1;
 	}
 	
-	function addRect(x, y, w, h, fill) {
+	function addRect(x, y, w, h, type) {
 		var rect = new Box;
+		rect.type = type;
 		rect.x = x;
 		rect.y = y;
 		rect.w = w
@@ -183,13 +191,31 @@ $(document).ready(function(){
 	// Draws a single shape to a single context
 	// draw() will call this with the normal canvas
 	// myDown will call this with the ghost canvas
-	function drawshape(context, shape, fill) {
-	  context.fillStyle = fill;
+	function drawshape(context, shape) {
 	  
 	  // We can skip the drawing of elements that have moved off the screen:
 	  if (shape.x > canvas.width || shape.y > canvas.height) return; 
 	  if (shape.x + shape.w < 0 || shape.y + shape.h < 0) return;
 	  
+	  if(shape.type == "server"){
+		  if(serverImg) context.drawImage(serverImg,shape.x,shape.y,shape.w,shape.h);
+	  }
+	  if(shape.type == "module"){
+		  if(moduleImg) context.drawImage(moduleImg,shape.x,shape.y,shape.w,shape.h);
+	  }
+	  if(shape.type == "light"){
+		  if(lightImg) context.drawImage(lightImg,shape.x,shape.y,shape.w,shape.h);
+	  }
+	  
+	}
+	
+	function drawshape2(context, shape, fill) {
+	  context.fillStyle = fill;
+	  
+	  // We can skip the drawing of elements that have moved off the screen:
+	  if (shape.x > canvas.width || shape.y > canvas.height) return; 
+	  if (shape.x + shape.w < 0 || shape.y + shape.h < 0) return;
+	  console.log("got here");
 	  context.fillRect(shape.x,shape.y,shape.w,shape.h);
 	}
 	
@@ -242,7 +268,7 @@ $(document).ready(function(){
 		clear(gctx); // clear the ghost canvas from its last use
 		//Is it a box?
 		for (var i = boxes.length-1; i >= 0; i--) {
-			drawshape(gctx, boxes[i], 'black');
+			drawshape2(gctx, boxes[i], 'black');
 
 			// get image data at the mouse x,y pixel
 			var imageData = gctx.getImageData(x, y, 1, 1);
@@ -361,7 +387,7 @@ $(document).ready(function(){
 	function justDraw(){
 			// draw all boxes
 			for (var i = 0; i < boxes.length; i++) {
-				drawshape(context, boxes[i], boxes[i].fill);
+				drawshape(context, boxes[i]);
 				//Draw all lines
 				for(var j = 0; j < boxes[i].lines.length; j++){
 					var source = boxes[i];
@@ -370,11 +396,11 @@ $(document).ready(function(){
 					context.moveTo(source.midx, source.midy);
 					context.lineTo(dest.midx, dest.midy);
 					if(source.lines[j].istimeout){
-						context.strokeStyle = '#FF0000';
+						context.strokeStyle = '#000000';
 					}else{
-						context.strokeStyle = '#FF00FF';
+						context.strokeStyle = '#000000';
 					}
-					context.lineWidth = 10;
+					context.lineWidth = 3;
 					context.stroke();		
 					context.closePath();
 				}
@@ -400,7 +426,9 @@ $(document).ready(function(){
 			clear(context);
 
 			// Add stuff drawn in background here:
-
+			context.globalAlpha = 0.5;
+			if(floorPlan) context.drawImage(floorPlan,0,0,canvas.width,canvas.height);
+			context.globalAlpha = 1;
 			justDraw();
 
 			// Add stuff drawn on top here
@@ -432,11 +460,23 @@ $(document).ready(function(){
 	}
 
 	function takeAction(e){
-		if("Add" == mode){
+		if("AddServer" == mode){
 			getMouse(e);
-			var width = 150;
-			var height = 100;
-			addRect(mx - (width / 2), my - (height / 2), width, height, myboxcolor);
+			var width = 32;
+			var height = 32;
+			addRect(mx - (width / 2), my - (height / 2), width, height, "server");
+		}
+		if("AddModule" == mode){
+			getMouse(e);
+			var width = 32;
+			var height = 32;
+			addRect(mx - (width / 2), my - (height / 2), width, height, "module");
+		}
+		if("AddLight" == mode){
+			getMouse(e);
+			var width = 32;
+			var height = 32;
+			addRect(mx - (width / 2), my - (height / 2), width, height, "light");
 		}
 		else if("Info" == mode){
 			inspect(e);
