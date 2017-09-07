@@ -40,6 +40,7 @@ $(document).ready(function(){
 	canvas.onmouseup = myUp;
 	document.onkeydown = checkKey;
 	
+	//
 	var boxvars = [];//Used to clear vars between clicks.
 	
 	//fixes a problem where double clicking causes text to get selected on the canvas
