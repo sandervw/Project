@@ -1,5 +1,11 @@
 $(document).ready(function(){
 
+	//Variable to keep track of user mode
+	//TODO get permission based on login
+	//1 = admin
+	//2 = general user
+	var userMode = 1;
+
 	var mode;
 	var roomnum = 1;
 	var boxes = [];
@@ -36,37 +42,6 @@ $(document).ready(function(){
 	
 	var boxvars = [];//Used to clear vars between clicks.
 	
-	//Box
-	var sbox = document.getElementById("startbox");
-	sbox.addEventListener("change", populateFromBoxPane);
-	boxvars.push(sbox);
-	var scenbox = document.getElementById("textbox");
-	boxvars.push(scenbox)
-	scenbox.addEventListener("change", populateFromBoxPane);
-	var pointbox = document.getElementById("pointvalbox");
-	pointbox.addEventListener("change", populateFromBoxPane);
-	boxvars.push(pointbox);
-	var timebox = document.getElementById("timebox");
-	timebox.addEventListener("change", populateFromBoxPane);
-	boxvars.push(timebox);
-	var imgbtn2 = document.getElementById("imagebox2");
-	imgbtn2.addEventListener("change", populateFromBoxPane);
-	boxvars.push(imgbtn2);
-	
-	//Line
-	var istimeoutbox = document.getElementById("is_timeout");
-	istimeoutbox.addEventListener("change", populateFromBoxPane);
-	boxvars.push(istimeoutbox);
-	var btntxt2 = document.getElementById("nexttxt");
-	btntxt2.addEventListener("change", populateFromBoxPane);
-	boxvars.push(btntxt2);
-	
-	var boxpane = document.getElementById('infopanebox');
-	var linepane = document.getElementById('infopaneline');
-
-	boxpane.hidden = true;
-	linepane.hidden = true;
-	
 	//fixes a problem where double clicking causes text to get selected on the canvas
     canvas.onselectstart = function () { return false; }
 	
@@ -93,6 +68,8 @@ $(document).ready(function(){
 	// Padding and border style widths for mouse offsets
 	var stylePaddingLeft, stylePaddingTop, styleBorderLeft, styleBorderTop;
 	var mx, my; //Used for mouse positions
+	
+	if(userMode == 1) floatingbar.hidden = false;
 	
 	var exportboxes = {};
 	
@@ -219,50 +196,6 @@ $(document).ready(function(){
 	  context.fillRect(shape.x,shape.y,shape.w,shape.h);
 	}
 	
-	//Certainly a way to do this more efficiently/less duplicate dcode
-	function populateFromBoxPane(){
-	console.log(mySel);
-		if(mySel == null){
-				return;
-			}
-			if(mySel.type == "box"){				
-				 mySel.startroom = sbox.checked;
-				 mySel.scentext = scenbox.value;
-				 mySel.points = pointbox.value;
-				 mySel.time = timebox.value;
-			}else if(mySel.type == "line"){
-				mySel.istimeout = istimeoutbox.checked;
-				mySel.text = btntxt2.value;	
-			}
-			
-		//One one startroom
-		if(mySel.startroom){
-			for(var i = 0; i < boxes.length; i++){
-				if(boxes[i].name != mySel.name){
-					boxes[i].startroom.checked = false;
-				}
-			}
-		}
-	
-	}
-	
-	function populateBoxPane(){
-	
-		if(mySel == null){
-			return;
-		}
-		if(mySel.type == "box"){
-			sbox.checked = mySel.startroom;
-			scenbox.value = mySel.scentext;
-			pointbox.value = mySel.points;
-			timebox.value = mySel.time;
-			
-		}else if(mySel.type == "line"){
-			istimeoutbox.checked = mySel.istimeout;
-			btntxt2.value = mySel.text;
-		}
-	}
-	
 	//Also sets mySelf
 	function isinbox(x, y){
 		clear(gctx); // clear the ghost canvas from its last use
@@ -324,22 +257,6 @@ $(document).ready(function(){
 			}
 			return false;
 		}
-		
-	function inspect(e)
-	{
-			getMouse(e);
-			if(isinbox(mx, my)){
-				linepane.hidden = true;
-				boxpane.hidden = false;
-				populateBoxPane();
-			}
-			else if(isinline(mx, my)){
-				boxpane.hidden = true;
-				linepane.hidden = false;
-				populateBoxPane();
-			}
-			
-	}
 	
 	function myDown(e){
 	  if(mode == "Mouse"){
@@ -359,8 +276,6 @@ $(document).ready(function(){
 				clear(gctx);
 			}
 			mySel = null;// havent returned means we have selected nothing
-			boxpane.hidden = true;
-			linepane.hidden = true;
 
 			clear(gctx); // clear the ghost canvas for next time
 			invalidate();// invalidate because we might need the selection border to disappear
@@ -385,49 +300,52 @@ $(document).ready(function(){
 	}
 	
 	function justDraw(){
-			// draw all boxes
-			for (var i = 0; i < boxes.length; i++) {
-				drawshape(context, boxes[i]);
-				//Draw all lines
-				for(var j = 0; j < boxes[i].lines.length; j++){
-					var source = boxes[i];
-					var dest = findBoxByName(source.lines[j].toname);
-					context.beginPath();
-					context.moveTo(source.midx, source.midy);
-					context.lineTo(dest.midx, dest.midy);
-					if(source.lines[j].istimeout){
-						context.strokeStyle = '#000000';
-					}else{
-						context.strokeStyle = '#000000';
-					}
-					context.lineWidth = 3;
-					context.stroke();		
-					context.closePath();
+		
+		//draw BG
+		context.globalAlpha = 0.5;
+		if(floorPlan) context.drawImage(floorPlan,0,0,canvas.width *(floorPlan.width/floorPlan.height),canvas.height);
+		context.globalAlpha = 1;
+		
+		// draw all boxes
+		for (var i = 0; i < boxes.length; i++) {
+			drawshape(context, boxes[i]);
+			//Draw all lines
+			for(var j = 0; j < boxes[i].lines.length; j++){
+				var source = boxes[i];
+				var dest = findBoxByName(source.lines[j].toname);
+				context.beginPath();
+				context.moveTo(source.midx, source.midy);
+				context.lineTo(dest.midx, dest.midy);
+				if(source.lines[j].istimeout){
+					context.strokeStyle = '#000000';
+				}else{
+					context.strokeStyle = '#000000';
 				}
+				context.lineWidth = 3;
+				context.stroke();		
+				context.closePath();
 			}
+		}
 			
-			// draw selection
-			// right now this is just a stroke along the edge of the selected box
-			if (mySel != null) {
-			  context.strokeStyle = mySelColor;
-			  context.lineWidth = mySelWidth;
-			  context.strokeRect(mySel.x,mySel.y,mySel.w,mySel.h);
-			}
+		// draw selection
+		// right now this is just a stroke along the edge of the selected box
+		if (mySel != null) {
+			context.strokeStyle = mySelColor;
+			context.lineWidth = mySelWidth;
+			context.strokeRect(mySel.x,mySel.y,mySel.w,mySel.h);
+		}
 	}
 		
 	// While draw is called as often as the INTERVAL variable demands,
 	// It only ever does something if the canvas gets invalidated by our code
 	function draw() {
-	  if(mySel == null){
-		boxpane.hidden = true;
-		linepane.hidden = true;
-	  }
+		
 	  if (canvasValid == false) {
 			clear(context);
 
 			// Add stuff drawn in background here:
 			context.globalAlpha = 0.5;
-			if(floorPlan) context.drawImage(floorPlan,0,0,canvas.width,canvas.height);
+			if(floorPlan) context.drawImage(floorPlan,0,0,canvas.width *(floorPlan.width/floorPlan.height),canvas.height);
 			context.globalAlpha = 1;
 			justDraw();
 
@@ -443,15 +361,13 @@ $(document).ready(function(){
 		if(e.keyCode == 27) {
 			if(mySel != null){
 				mySel = null;
-				boxpane.hidden = true;
-				linepane.hidden = true;
 				invalidate();
 			}
 		}
 		
 		//Delete key or backspace pressed when a pane is closed
 		if(e.keyCode == 46 || e.keyCode == 8) {
-			if(mySel != null && boxpane.hidden && linepane.hidden){
+			if(mySel != null){
 				boxes.splice(mySelIndex, 1);
 				mySel = null;
 				invalidate();
@@ -607,11 +523,12 @@ $(document).ready(function(){
 				invalidate();
 			}
 		}
+		
 		else{
 			canvas.onmousedown = myDown;
 			canvas.onmouseup = myUp;
 			canvas.onmousemove = null;
-			}
+		}
 	}
 	
 	floatingMenu.add('floatingbar',  
@@ -619,20 +536,6 @@ $(document).ready(function(){
 		targetRight: 10,  
 		targetTop: 10,  
 		snap: true  
-	});  
-	
-	floatingMenu.add('infopanebox',
-	{
-		targetLeft: 10,
-		targetTop: 10,
-		snap: true
-	});
-	
-	floatingMenu.add('infopaneline',
-	{
-		targetLeft: 10,
-		targetTop: 10,
-		snap: true
 	});
 		
 	//Select image
