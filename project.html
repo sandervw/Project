@@ -2,7 +2,6 @@
 <head>
 <!--Stylesheet Imports -->
 <link rel="stylesheet" href="css\style.css"/>
-<link rel="stylesheet" href="css\creator.css"/>
 <!-- Bootstrap Stylesheet Import -->
 <link rel="stylesheet" href="js\bootstrap-3.3.7-dist\css\bootstrap.css"/>
 <!-- JQuery UI Stylesheet Import -->
@@ -21,12 +20,30 @@
 <script src="js\project.js" ></script>
 </head>
 <body>
-	<div class="row">
-		<div class="col-xs-12">
-			<canvas id="canvas" width="200" height="100" style="border:1px solid #000000;"></canvas>
+
+	<!-- Banner -->
+    <div id="banner" class="container-fluid">
+        <div class="row">
+            <h1>Arndorfer Industries</h1>
+        </div>
+    </div>
+	
+	<!-- Login -->
+	<div id="login" class="container-fluid navbar navbar-default">
+        <div class="row">
+			<h3>Login</h3>
+			<input type="text" id="username" value="Username"/>
+			<input type="text" id="password" value="Password"/>
+        </div>
+    </div>
+
+	<!-- Main canvas for floor plan and lights -->
+	<div class="container-fluid no-pad" id="content">
+		<canvas id="canvas" style="padding-left: 5px;padding-top: 5px;">
 		</div>
 	</div>
 
+	<!-- Side bar for design of lights and modules -->
 	<div id="floatingbar" hidden="true">
 		<img id="Mouse" src="images\builder\mouseicon.png" height="64" width="64" vspace="10"></img>
 		<img id="AddServer" src="images\builder\servericon.png" height="64" width="64" vspace="10"></img>

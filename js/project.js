@@ -29,8 +29,8 @@ $(document).ready(function(){
 	floorPlan = new Image();
 	floorPlan.src = "images/tempFloorPlan.jpg";
 	
-	canvas.height = window.innerHeight;
-	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight*.80;
+	canvas.width = window.innerWidth*.80;
 	canvas.addEventListener("click", takeAction);
 	ghostcanvas = document.createElement('canvas');
 	ghostcanvas.height = canvas.height;
