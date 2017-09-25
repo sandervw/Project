@@ -29,11 +29,28 @@
     </div>
 	
 	<!-- Login -->
-	<div id="login" class="container-fluid navbar navbar-default">
+	<div id="login" class="container-fluid">
         <div class="row">
-			<h3>Login</h3>
-			<input type="text" id="username" value="Username"/>
-			<input type="text" id="password" value="Password"/>
+			<div class="col-xs-5" style="padding-top: 15px;">
+				<input type="text" id="username" value="Username" style="color: #000000"/>
+			</div>
+			<div class="col-xs-5" style="padding-top: 15px;">
+				<input type="text" id="password" value="Password" style="color: #000000"/>
+			</div>
+			<div class="col-xs-2" style="padding-top: 15px; color: #000000">
+				<input type="button" id="loginButton" value="Login" class="btn btn-default"/>
+			</div>
+        </div>
+    </div>
+	
+	<div id="accountInfo" class="container-fluid" hidden="true">
+        <div class="row">
+			<div class="col-xs-5" style="padding-top: 5px;">
+				<h3>Current User:</h3>
+			</div>
+			<div class="col-xs-5" style="padding-top: 15px;">
+				<h3 id="currentUser"></h3>
+			</div>
         </div>
     </div>
 

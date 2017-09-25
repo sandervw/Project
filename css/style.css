@@ -11,7 +11,7 @@ html{
     top: 0px;
     left: 0px;
     height: 10%;
-    width: 80%;
+    width: 70%;
     background-color: #74767F;
     color: #fff;
     font-family: ingelby;
@@ -23,7 +23,19 @@ html{
     top: 0px;
     right: 0px;
     height: 10%;
-    width: 20%;
+    width: 30%;
+    background-color: #8c8989;
+    color: #fff;
+    font-family: ingelby;
+	text-indent: 5px;
+}
+
+#accountInfo {
+	position: absolute;
+    top: 0px;
+    right: 0px;
+    height: 10%;
+    width: 30%;
     background-color: #8c8989;
     color: #fff;
     font-family: ingelby;

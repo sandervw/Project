@@ -70,9 +70,34 @@ $(document).ready(function(){
 	var stylePaddingLeft, stylePaddingTop, styleBorderLeft, styleBorderTop;
 	var mx, my; //Used for mouse positions
 	
-	if(userMode == 1) floatingbar.hidden = false;
-	
 	var exportboxes = {};
+	
+	$("#loginButton").click(function(){
+		var username1 = document.getElementById("username").value;
+		var password1 = document.getElementById("password").value;
+		if(username1 == "admin") userMode = 1;
+		else userMode = 2;
+		changeUser();
+	});
+	
+	function changeUser(){
+		if(userMode == 1){
+			document.getElementById("floatingbar").hidden = false;
+			document.getElementById("login").hidden = true;
+			document.getElementById("accountInfo").hidden = false;
+			document.getElementById("currentUser").val = document.getElementById("username").value;
+			canvas.onmousedown = myAdminDown;
+			canvas.onmouseup = myAdminUp;
+		}
+		else if(userMode == 2){
+			document.getElementById("floatingbar").hidden = true;
+			document.getElementById("login").hidden = true;
+			document.getElementById("accountInfo").hidden = false;
+			document.getElementById("currentUser").val = document.getElementById("username").value;
+			canvas.onmousedown = myDown;
+			canvas.onmouseup = myUp;
+		}
+	}
 	
 	function invalidate() {
 		canvasValid = false;
@@ -267,6 +292,32 @@ $(document).ready(function(){
 			  offsety = my - mySel.y;
 			  mySel.x = mx - offsetx;
 			  mySel.y = my - offsety;
+			  
+			  invalidate();
+			  return;
+			}
+			//Check if it exists as a line.
+			else{
+				clear(gctx);
+			}
+			mySel = null;// havent returned means we have selected nothing
+
+			clear(gctx); // clear the ghost canvas for next time
+			invalidate();// invalidate because we might need the selection border to disappear
+		}
+	}
+
+	function myUp(){
+	}
+	
+	function myAdminDown(e){
+	  if(mode == "Mouse"){
+		  getMouse(e);
+		  if(isinbox(mx, my)){
+			  offsetx = mx - mySel.x;
+			  offsety = my - mySel.y;
+			  mySel.x = mx - offsetx;
+			  mySel.y = my - offsety;
 			  isDrag = true;
 			  canvas.onmousemove = myMove;
 			  invalidate();
@@ -295,7 +346,7 @@ $(document).ready(function(){
 	  }
 	}
 
-	function myUp(){
+	function myAdminUp(){
 	  isDrag = false;
 	  canvas.onmousemove = null;
 	}
@@ -531,13 +582,6 @@ $(document).ready(function(){
 			canvas.onmousemove = null;
 		}
 	}
-	
-	floatingMenu.add('floatingbar',  
-	{
-		targetRight: 10,  
-		targetTop: 10,  
-		snap: true  
-	});
 		
 	//Select image
 	$('img').click(function(){
