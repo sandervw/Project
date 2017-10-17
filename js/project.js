@@ -5,6 +5,8 @@ $(document).ready(function(){
 	//1 = admin
 	//2 = general user
 	var userMode = 1;
+	
+	var websocket = new WebSocket("server address");
 
 	var mode;
 	var roomnum = 1;
