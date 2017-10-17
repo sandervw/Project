@@ -80,6 +80,12 @@ $(document).ready(function(){
 		changeUser();
 	});
 	
+	$("#switchUser").click(function(){
+		if(userMode == 2) userMode = 1;
+		else userMode = 2;
+		changeUser();
+	});
+	
 	function changeUser(){
 		if(userMode == 1){
 			document.getElementById("floatingbar").hidden = false;
@@ -285,26 +291,26 @@ $(document).ready(function(){
 		}
 	
 	function myDown(e){
-	  if(mode == "Mouse"){
-		  getMouse(e);
-		  if(isinbox(mx, my)){
-			  offsetx = mx - mySel.x;
-			  offsety = my - mySel.y;
-			  mySel.x = mx - offsetx;
-			  mySel.y = my - offsety;
-			  
-			  invalidate();
-			  return;
-			}
-			//Check if it exists as a line.
-			else{
-				clear(gctx);
-			}
-			mySel = null;// havent returned means we have selected nothing
-
-			clear(gctx); // clear the ghost canvas for next time
-			invalidate();// invalidate because we might need the selection border to disappear
+	  getMouse(e);
+	  if(isinbox(mx, my)){
+		  offsetx = mx - mySel.x;
+		  offsety = my - mySel.y;
+		  mySel.x = mx - offsetx;
+		  mySel.y = my - offsety;
+		  
+		  //do websocket here 
+		  
+		  
+		  invalidate();
+		  return;
 		}
+		//Check if it exists as a line.
+		else{
+			clear(gctx);
+		}
+		mySel = null;// havent returned means we have selected nothing
+		clear(gctx); // clear the ghost canvas for next time
+		invalidate();// invalidate because we might need the selection border to disappear
 	}
 
 	function myUp(){
