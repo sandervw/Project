@@ -6,7 +6,18 @@ $(document).ready(function(){
 	//2 = general user
 	var userMode = 1;
 	
-	var websocket = new WebSocket("server address");
+	//webserver ip: 192.168.27.32
+	//light1 ip: 192.168.27.31
+	//light2 ip: 192.168.27.33
+	//port: 5167
+	
+	var websocket = new WebSocket('ws://192.168.27.33:5167/');
+	websocket.onopen = function () {
+            console.log("Opening a connection...");
+			var s = 'chainsawxXtk;lejaksjdflksjdgjkfapo;lkdjfakldklfasdf;asdlkfajsdfkljkf;ldfdddddddddddddddddddddd\n\rtestest';
+			websocket.send(s);
+    };
+	websocket.onmessage = function(e){ console.log(e.data); };
 
 	var mode;
 	var roomnum = 1;
@@ -300,8 +311,10 @@ $(document).ready(function(){
 		  mySel.x = mx - offsetx;
 		  mySel.y = my - offsety;
 		  
+		  console.log("got here");
 		  //do websocket here 
-		  
+		  websocket.send("chainsawxX");
+		  console.log("got here 2");
 		  
 		  invalidate();
 		  return;
