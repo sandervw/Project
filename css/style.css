@@ -61,6 +61,15 @@ html{
     height: 75%;
 }
 
+#enterInfo
+{
+	position:absolute;  
+	width:250%;height:15%;top:10%;right:10%;  
+	background:#FFFFFF;  
+	border:2px solid #2266AA;  
+	z-index:100;
+}
+
 
 #display{
   background-color: #eeeeee;
