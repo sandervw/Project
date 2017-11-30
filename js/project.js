@@ -38,6 +38,9 @@ $(document).ready(function () {
     var lightImg;
     lightImg = new Image();
     lightImg.src = "images/builder/lighticon.png";
+	var lightImgLit;
+    lightImgLit = new Image();
+    lightImgLit.src = "images/builder/lighticonlit.png";
 
     var floorPlan;
     floorPlan = new Image();
@@ -105,6 +108,18 @@ $(document).ready(function () {
         if (userMode == 2) userMode = 1;
         else userMode = 2;
         changeUser();
+    });
+	
+	$("#enterInfo_Button").click(function () {
+        enterInfo.hidden = true;
+        if (mySel.type == "module") {
+			enterInfo_Module.hidden = true;
+            mySel.ip = ipInput.value;
+        }
+        else if (mySel.type == "light") {
+			enterInfo_Light.hidden = true;
+            mySel.ip = lightNumInput.value;
+        }
     });
 
     function changeUser() {
@@ -220,7 +235,11 @@ $(document).ready(function () {
             if (moduleImg) context.drawImage(moduleImg, shape.x, shape.y, shape.w, shape.h);
         }
         if (shape.type == "light") {
-            if (lightImg) context.drawImage(lightImg, shape.x, shape.y, shape.w, shape.h);
+            if (lightImg){
+				console.log(shape.isLit);
+				if(!shape.isLit) context.drawImage(lightImg, shape.x, shape.y, shape.w, shape.h);
+				else context.drawImage(lightImgLit, shape.x, shape.y, shape.w, shape.h);
+			}
         }
 
     }
@@ -304,11 +323,11 @@ $(document).ready(function () {
             offsety = my - mySel.y;
             mySel.x = mx - offsetx;
             mySel.y = my - offsety;
-
+			mySel.isLit = true;
             console.log("got here 1");
             //do websocket here 
 			//TODO2
-            websocket.send("chainsaw0");
+            //websocket.send("chainsaw0");
 
             console.log("got here 2");
 
@@ -319,6 +338,8 @@ $(document).ready(function () {
         else {
             clear(gctx);
         }
+		
+		
         mySel = null;// havent returned means we have selected nothing
         clear(gctx); // clear the ghost canvas for next time
         invalidate();// invalidate because we might need the selection border to disappear
@@ -377,21 +398,28 @@ $(document).ready(function () {
     function inspect(e) {
         getMouse(e);
         if (isinbox(mx, my)) {
+			offsetx = mx - mySel.x;
+            offsety = my - mySel.y;
+            mySel.x = mx - offsetx;
+            mySel.y = my - offsety;
             enterInfo.hidden = false;
             if (mySel.type == "module") {
+				enterInfo_Module.hidden = false;
                 ipInput.value = mySel.ip;
                 context.strokeStyle = mySelColor;
                 context.lineWidth = mySelWidth;
                 context.strokeRect(mySel.x, mySel.y, mySel.w, mySel.h);
             }
             else if (mySel.type == "light") {
-                ipInput.value = mySel.ip;
+				enterInfo_Light.hidden = false;
+                lightNumInput.value = mySel.ip;
                 context.strokeStyle = mySelColor;
                 context.lineWidth = mySelWidth;
                 context.strokeRect(mySel.x, mySel.y, mySel.w, mySel.h);
             }
         }
-
+		clear(gctx); // clear the ghost canvas for next time
+        invalidate();// invalidate because we might need the selection border to disappear
     }
 
     function justDraw() {
@@ -430,7 +458,7 @@ $(document).ready(function () {
 
         // draw selection
         // right now this is just a stroke along the edge of the selected box
-        if (mySel != null) {
+        if (mySel != null && userMode == 1) {
             context.strokeStyle = mySelColor;
             context.lineWidth = mySelWidth;
             context.strokeRect(mySel.x, mySel.y, mySel.w, mySel.h);
@@ -464,7 +492,7 @@ $(document).ready(function () {
 
         //Delete key or backspace pressed when a pane is closed
         if (e.keyCode == 46 || e.keyCode == 8) {
-            if (mySel != null) {
+            if (mySel != null && mode == "Mouse") {
                 boxes.splice(mySelIndex, 1);
                 mySel = null;
                 invalidate();
@@ -586,6 +614,7 @@ $(document).ready(function () {
         this.midy = this.y + this.h / 2;
         this.fill = '#444444';
         this.lines = [];
+		this.isLit = false;
 
         identity += 1;
     }

@@ -75,7 +75,27 @@
 	
 	<!-- Info change container -->
 	<div class="container-fluid no-pad" id="enterInfo" hidden="true">
-		<Label>IP Address</label><input id="ipInput" type="text"></input>
+		<div class="row">
+			<div class="col-xs-12">
+				<h3>Enter Node Info:</h3>
+			</div>
+		</div>
+		<div class="row" id="enterInfo_Module" hidden="true">
+			<div class="col-xs-12">
+				<Label>IP Address: </label>
+				<input id="ipInput" type="text"></input>
+			</div>
+		</div>
+		<div class="row" id="enterInfo_Light" hidden="true"> 
+			<div class="col-xs-12">
+				<Label>Light Number: </label>
+				<input id="lightNumInput" type="text"></input>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12">
+				<input type="button" id="enterInfo_Button" value="Enter" class="btn btn-default"/>
+			</div>
 		</div>
 	</div>
 	
