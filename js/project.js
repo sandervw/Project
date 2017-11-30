@@ -253,7 +253,7 @@ $(document).ready(function () {
         context.fillRect(shape.x, shape.y, shape.w, shape.h);
     }
 
-    //Also sets mySelf
+    //Also sets mySel
     function isinbox(x, y) {
         clear(gctx); // clear the ghost canvas from its last use
         //Is it a box?
@@ -352,9 +352,9 @@ $(document).ready(function () {
 
     function myAdminDown(e) {
         if (mode == "Mouse") {
-            console.log(canvas.onMouseDown);
             getMouse(e);
             if (isinbox(mx, my)) {
+				console.log(mySel.id);
                 offsetx = mx - mySel.x;
                 offsety = my - mySel.y;
                 mySel.x = mx - offsetx;
@@ -492,7 +492,14 @@ $(document).ready(function () {
 
         //Delete key or backspace pressed when a pane is closed
         if (e.keyCode == 46 || e.keyCode == 8) {
-            if (mySel != null && mode == "Mouse") {
+            if (mySel != null && mode == "Mouse" && userMode == 1) {
+				//remove edges connection to this box
+				for(var j = 0; j < mySel.lines.length; j++){
+					var tempBox = findBoxByName(mySel.lines[j].toname);
+					for(var k = 0; k < tempBox.lines.length; k++){
+						if (tempBox.lines[k].toname == mySel.id) tempBox.lines.splice(k, 1);
+					}
+				}
                 boxes.splice(mySelIndex, 1);
                 mySel = null;
                 invalidate();
@@ -570,9 +577,11 @@ $(document).ready(function () {
                 if (started) {
                     started = false;
                     getMouse(e);
-                    var source = mySel;
-                    if (isinbox(mx, my) && source != mySel) {
+                    var source = mySel; //store original mySel
+                    if (isinbox(mx, my) && source != mySel) { //set mySel to the destination box
                         source.lines.push(new Line(mySel.id));
+						mySel.lines.push(new Line(source.id));
+						console.log(source.lines);
                     }
                 }
                 invalidate();
@@ -613,9 +622,9 @@ $(document).ready(function () {
         this.midx = this.x + this.w / 2;
         this.midy = this.y + this.h / 2;
         this.fill = '#444444';
-        this.lines = [];
+        this.lines = []; //used for drawing lines and remebering connections
 		this.isLit = false;
-
+		
         identity += 1;
     }
 	
