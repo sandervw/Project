@@ -10,13 +10,18 @@ $(document).ready(function () {
     //light1 ip: 192.168.27.31
     //light2 ip: 192.168.27.33
     //port: 5167
-	//TODO1
-	var websocket = new WebSocket('ws://192.168.27.33:5167/');
+	
+	var websocket = new WebSocket('ws://192.168.27.32:5167/');
     websocket.onopen = function () {
         console.log("Opening a connection...");
     };
+	
     websocket.onmessage = function (e) {
-        console.log(data(e));
+		console.log("message recieved from server");
+        console.log(e.data);
+		//192.168.27.340T - on - ip_relaynum_status
+		//192.168.27.340F - off
+		invalidate();
     };
 
 
@@ -93,34 +98,15 @@ $(document).ready(function () {
     // Padding and border style widths for mouse offsets
     var stylePaddingLeft, stylePaddingTop, styleBorderLeft, styleBorderTop;
     var mx, my; //Used for mouse positions
-
-    var exportboxes = {};
-
-    $("#loginButton").click(function () {
-        var username1 = document.getElementById("username").value;
-        var password1 = document.getElementById("password").value;
-        if (username1 == "admin") userMode = 1;
-        else userMode = 2;
-        changeUser();
-    });
-
-    $("#switchUser").click(function () {
-        if (userMode == 2) userMode = 1;
-        else userMode = 2;
-        changeUser();
-    });
 	
-	$("#enterInfo_Button").click(function () {
-        enterInfo.hidden = true;
-        if (mySel.type == "module") {
-			enterInfo_Module.hidden = true;
-            mySel.ip = ipInput.value;
-        }
-        else if (mySel.type == "light") {
-			enterInfo_Light.hidden = true;
-            mySel.ip = lightNumInput.value;
-        }
-    });
+	// fixes mouse co-ordinate problems when there's a border or padding
+    // see getMouse for more detail
+    if (document.defaultView && document.defaultView.getComputedStyle) {
+        stylePaddingLeft = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingLeft'], 10) || 0;
+        stylePaddingTop = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingTop'], 10) || 0;
+        styleBorderLeft = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderLeftWidth'], 10) || 0;
+        styleBorderTop = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderTopWidth'], 10) || 0;
+    }
 
     function changeUser() {
         if (userMode == 1) {
@@ -163,13 +149,6 @@ $(document).ready(function () {
         invalidate();
     }
 
-    function Line(id) {
-        this.type = "line";
-        this.text = "";
-        this.toname = id;
-        this.istimeout = false;
-    }
-
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
         return {
@@ -208,49 +187,6 @@ $(document).ready(function () {
             }
         }
         return null;
-    }
-
-    // fixes mouse co-ordinate problems when there's a border or padding
-    // see getMouse for more detail
-    if (document.defaultView && document.defaultView.getComputedStyle) {
-        stylePaddingLeft = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingLeft'], 10) || 0;
-        stylePaddingTop = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingTop'], 10) || 0;
-        styleBorderLeft = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderLeftWidth'], 10) || 0;
-        styleBorderTop = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderTopWidth'], 10) || 0;
-    }
-
-    // Draws a single shape to a single context
-    // draw() will call this with the normal canvas
-    // myDown will call this with the ghost canvas
-    function drawshape(context, shape) {
-
-        // We can skip the drawing of elements that have moved off the screen:
-        if (shape.x > canvas.width || shape.y > canvas.height) return;
-        if (shape.x + shape.w < 0 || shape.y + shape.h < 0) return;
-
-        if (shape.type == "server") {
-            if (serverImg) context.drawImage(serverImg, shape.x, shape.y, shape.w, shape.h);
-        }
-        if (shape.type == "module") {
-            if (moduleImg) context.drawImage(moduleImg, shape.x, shape.y, shape.w, shape.h);
-        }
-        if (shape.type == "light") {
-            if (lightImg){
-				console.log(shape.isLit);
-				if(!shape.isLit) context.drawImage(lightImg, shape.x, shape.y, shape.w, shape.h);
-				else context.drawImage(lightImgLit, shape.x, shape.y, shape.w, shape.h);
-			}
-        }
-
-    }
-
-    function drawshape2(context, shape, fill) {
-        context.fillStyle = fill;
-
-        // We can skip the drawing of elements that have moved off the screen:
-        if (shape.x > canvas.width || shape.y > canvas.height) return;
-        if (shape.x + shape.w < 0 || shape.y + shape.h < 0) return;
-        context.fillRect(shape.x, shape.y, shape.w, shape.h);
     }
 
     //Also sets mySel
@@ -316,20 +252,24 @@ $(document).ready(function () {
     }
 
     function myDown(e) {
-        console.log(canvas.onMouseDown);
         getMouse(e);
         if (isinbox(mx, my)) {
             offsetx = mx - mySel.x;
             offsety = my - mySel.y;
             mySel.x = mx - offsetx;
             mySel.y = my - offsety;
-			mySel.isLit = true;
-            console.log("got here 1");
+			if(mySel.isLit) mySel.isLit = false;
+			else mySel.isLit = true;
+			var  connModule = findBoxByName(mySel.lines[0].toname);
+			var lightNum = mySel.ip;
+			var ipNum = connModule.ip;
+            console.log(lightNum + "..." + ipNum);
             //do websocket here 
 			//TODO2
-            //websocket.send("chainsaw0");
+            websocket.send("chainsaw" + lightNum + ipNum);
+			//websocket.send("chainsaw0192.168.27.34");
 
-            console.log("got here 2");
+            console.log("chainsaw" + lightNum + ipNum);
 
             invalidate();
             return;
@@ -354,7 +294,6 @@ $(document).ready(function () {
         if (mode == "Mouse") {
             getMouse(e);
             if (isinbox(mx, my)) {
-				console.log(mySel.id);
                 offsetx = mx - mySel.x;
                 offsety = my - mySel.y;
                 mySel.x = mx - offsetx;
@@ -403,7 +342,7 @@ $(document).ready(function () {
             mySel.x = mx - offsetx;
             mySel.y = my - offsety;
             enterInfo.hidden = false;
-            if (mySel.type == "module") {
+            if (mySel.type == "module" || mySel.type == "server") {
 				enterInfo_Module.hidden = false;
                 ipInput.value = mySel.ip;
                 context.strokeStyle = mySelColor;
@@ -420,63 +359,6 @@ $(document).ready(function () {
         }
 		clear(gctx); // clear the ghost canvas for next time
         invalidate();// invalidate because we might need the selection border to disappear
-    }
-
-    function justDraw() {
-
-        //Draw Background
-        context.globalAlpha = 0.5;
-        if (floorPlan){
-			//Draw the floorplan with the correct aspect ration
-			drawImageScaled(floorPlan, context);
-		}
-        context.globalAlpha = 1;
-
-        // draw all boxes
-        for (var i = 0; i < boxes.length; i++) {
-            //Draw all lines
-			context.globalAlpha = 0.5;
-            for (var j = 0; j < boxes[i].lines.length; j++) {
-                var source = boxes[i];
-                var dest = findBoxByName(source.lines[j].toname);
-                context.beginPath();
-                context.moveTo(source.midx, source.midy);
-                context.lineTo(dest.midx, dest.midy);
-                if (source.lines[j].istimeout) {
-                    context.strokeStyle = '#000000';
-                } else {
-                    context.strokeStyle = '#000000';
-                }
-                context.lineWidth = 2;
-                context.stroke();
-                context.closePath();
-            }
-			context.globalAlpha = 1;
-			//draw the box
-			drawshape(context, boxes[i]);
-        }
-
-        // draw selection
-        // right now this is just a stroke along the edge of the selected box
-        if (mySel != null && userMode == 1) {
-            context.strokeStyle = mySelColor;
-            context.lineWidth = mySelWidth;
-            context.strokeRect(mySel.x, mySel.y, mySel.w, mySel.h);
-        }
-    }
-
-    // While draw is called as often as the INTERVAL variable demands,
-    // It only ever does something if the canvas gets invalidated by our code
-    function draw() {
-
-        if (canvasValid == false) {
-            clear(context);
-
-            justDraw();
-
-            // Add stuff drawn on top here
-            canvasValid = true;
-        }
     }
 
     function checkKey(e) {
@@ -581,7 +463,6 @@ $(document).ready(function () {
                     if (isinbox(mx, my) && source != mySel) { //set mySel to the destination box
                         source.lines.push(new Line(mySel.id));
 						mySel.lines.push(new Line(source.id));
-						console.log(source.lines);
                     }
                 }
                 invalidate();
@@ -601,16 +482,51 @@ $(document).ready(function () {
             }
         }
     }
+	
+	/*///////////////////////////////////////////////////////
+	/////////////////////Click Functions/////////////////////
+	///////////////////////////////////////////////////////*/
+	
+	$("#loginButton").click(function () {
+        var username1 = document.getElementById("username").value;
+        var password1 = document.getElementById("password").value;
+        if (username1 == "admin") userMode = 1;
+        else userMode = 2;
+        changeUser();
+    });
 
-    //Select image
+    $("#switchUser").click(function () {
+        if (userMode == 2) userMode = 1;
+        else userMode = 2;
+        changeUser();
+		invalidate();
+    });
+	
+	$("#enterInfo_Button").click(function () {
+        enterInfo.hidden = true;
+        if (mySel.type == "module" || mySel.type == "server") {
+			enterInfo_Module.hidden = true;
+            mySel.ip = ipInput.value;
+        }
+        else if (mySel.type == "light") {
+			enterInfo_Light.hidden = true;
+            mySel.ip = lightNumInput.value;
+        }
+    });
+	
+	//Select image
     $('img').click(function () {
         $('.selected').removeClass('selected'); // removes the previous selected class
         $(this).addClass('selected'); // adds the class to the clicked image
         mode = document.querySelector('.selected').id;
         init_mode();
     });
-
-    //Object to store the different icons (server, module, or light)
+	
+	/*///////////////////////////////////////////////////////
+	/////////////////////////Objects/////////////////////////
+	///////////////////////////////////////////////////////*/
+	
+	//Object to store the different icons (server, module, or light)
     function Box() {
         this.type = "module";
         this.id = identity;
@@ -628,6 +544,114 @@ $(document).ready(function () {
         identity += 1;
     }
 	
+	function Line(id) {
+        this.type = "line";
+        this.text = "";
+        this.toname = id;
+        this.istimeout = false;
+    }
+	
+	/*///////////////////////////////////////////////////////
+	/////////////////////Draw Functions//////////////////////
+	///////////////////////////////////////////////////////*/
+	
+	// While draw is called as often as the INTERVAL variable demands,
+    // It only ever does something if the canvas gets invalidated by our code
+    function draw() {
+
+        if (canvasValid == false) {
+            clear(context);
+
+            justDraw();
+
+            // Add stuff drawn on top here
+            canvasValid = true;
+        }
+    }
+	
+	function justDraw() {
+
+        //Draw Background
+        context.globalAlpha = 0.5;
+        if (floorPlan){
+			//Draw the floorplan with the correct aspect ration
+			drawImageScaled(floorPlan, context);
+		}
+        context.globalAlpha = 1;
+
+        // draw all boxes
+        for (var i = 0; i < boxes.length; i++) {
+            //Draw all lines
+			if(userMode == 1){
+				context.globalAlpha = 0.5;
+				for (var j = 0; j < boxes[i].lines.length; j++) {
+					var source = boxes[i];
+					var dest = findBoxByName(source.lines[j].toname);
+					context.beginPath();
+					context.moveTo(source.midx, source.midy);
+					context.lineTo(dest.midx, dest.midy);
+					if (source.lines[j].istimeout) {
+						context.strokeStyle = '#000000';
+					} else {
+						context.strokeStyle = '#000000';
+					}
+					context.lineWidth = 2;
+					context.stroke();
+					context.closePath();
+				}
+				context.globalAlpha = 1;
+				//draw the box
+				drawshape(context, boxes[i]);
+			}
+			else{
+				context.globalAlpha = 1;
+				//draw the box
+				if(boxes[i].type == "light")drawshape(context, boxes[i]);
+			}
+        }
+
+        // draw selection
+        // right now this is just a stroke along the edge of the selected box
+        if (mySel != null && userMode == 1) {
+            context.strokeStyle = mySelColor;
+            context.lineWidth = mySelWidth;
+            context.strokeRect(mySel.x, mySel.y, mySel.w, mySel.h);
+        }
+    }
+	
+	// Draws a single shape to a single context
+    // justDraw() will call this with the normal canvas
+    // myDown will call this with the ghost canvas
+    function drawshape(context, shape) {
+
+        // We can skip the drawing of elements that have moved off the screen:
+        if (shape.x > canvas.width || shape.y > canvas.height) return;
+        if (shape.x + shape.w < 0 || shape.y + shape.h < 0) return;
+
+        if (shape.type == "server") {
+            if (serverImg) context.drawImage(serverImg, shape.x, shape.y, shape.w, shape.h);
+        }
+        if (shape.type == "module") {
+            if (moduleImg) context.drawImage(moduleImg, shape.x, shape.y, shape.w, shape.h);
+        }
+        if (shape.type == "light") {
+            if (lightImg){
+				if(!shape.isLit) context.drawImage(lightImg, shape.x, shape.y, shape.w, shape.h);
+				else context.drawImage(lightImgLit, shape.x, shape.y, shape.w, shape.h);
+			}
+        }
+
+    }
+
+    function drawshape2(context, shape, fill) {
+        context.fillStyle = fill;
+
+        // We can skip the drawing of elements that have moved off the screen:
+        if (shape.x > canvas.width || shape.y > canvas.height) return;
+        if (shape.x + shape.w < 0 || shape.y + shape.h < 0) return;
+        context.fillRect(shape.x, shape.y, shape.w, shape.h);
+    }
+	
 	//draw image to context with correct aspect ratio
 	function drawImageScaled(img, ctx) {
 		var canvas = ctx.canvas ;
@@ -639,6 +663,29 @@ $(document).ready(function () {
 		ctx.clearRect(0,0,canvas.width, canvas.height);
 		ctx.drawImage(img, 0,0, img.width, img.height,
                       centerShift_x,centerShift_y,img.width*ratio, img.height*ratio);  
+	}
+	
+	/*///////////////////////////////////////////////////////
+	/////////////////Save and Load Functions/////////////////
+	///////////////////////////////////////////////////////*/
+	
+	function saveLayout(){
+		
+		//iterate through box list and push config if it's a module/server
+		
+		
+		//write json of boxes to storage file (positions too)
+		//TODO
+	}
+	
+	function loadLayout(){
+		
+		//load nodes from json file
+		//TODO
+		
+		//tell program to redraw
+		invalidate();
+		
 	}
 
 });
