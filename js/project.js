@@ -19,6 +19,7 @@ $(document).ready(function () {
     websocket.onmessage = function (e) {
 		console.log("message recieved from server");
         console.log(e.data);
+		
 		//192.168.27.340T - on - ip_relaynum_status
 		//192.168.27.340F - off
 		invalidate();
@@ -263,11 +264,9 @@ $(document).ready(function () {
 			var  connModule = findBoxByName(mySel.lines[0].toname);
 			var lightNum = mySel.ip;
 			var ipNum = connModule.ip;
-            console.log(lightNum + "..." + ipNum);
             //do websocket here 
 			//TODO2
             websocket.send("chainsaw" + lightNum + ipNum);
-			//websocket.send("chainsaw0192.168.27.34");
 
             console.log("chainsaw" + lightNum + ipNum);
 
@@ -408,11 +407,8 @@ $(document).ready(function () {
             var height = 32;
             addRect(mx - (width / 2), my - (height / 2), width, height, "light");
         }
-        else if ("Info" == mode) {
+        if ("Info" == mode) {
             inspect(e);
-        }
-        else if ("Save" == mode) {
-            save();
         }
     }
 
@@ -468,6 +464,10 @@ $(document).ready(function () {
                 invalidate();
             }
         }
+		
+		else if ("Save" == mode) {
+            saveLayout();
+        }
 
         else {
             if (userMode == 1) {
@@ -500,6 +500,10 @@ $(document).ready(function () {
         else userMode = 2;
         changeUser();
 		invalidate();
+    });
+	
+	$("#load").click(function () {
+        loadLayout();
     });
 	
 	$("#enterInfo_Button").click(function () {
@@ -540,7 +544,6 @@ $(document).ready(function () {
         this.fill = '#444444';
         this.lines = []; //used for drawing lines and remebering connections
 		this.isLit = false;
-		
         identity += 1;
     }
 	
@@ -672,16 +675,50 @@ $(document).ready(function () {
 	function saveLayout(){
 		
 		//iterate through box list and push config if it's a module/server
-		
+		for(var k = 0; k < boxes[i].length; k++){
+			if(boxes[k].type == "module"){
+				//var config = "[comm|port|5167|call|chainsaw|][pins|but1|7|but2|13|relay1|11|relay2|16|][configs|debug|1|]"
+				//websocket.send(config);
+			}
+		}
 		
 		//write json of boxes to storage file (positions too)
-		//TODO
+		console.log( "Saving Data");
+		var data = JSON.stringify( boxes );
+		var fileName = "floorData.fd";
+		var a = document.createElement("a");
+		document.body.appendChild(a);
+		a.style = "display: none";  
+		var json = JSON.stringify(data);
+		blob = new Blob([json], {type: "octet/stream"});
+		url = window.URL.createObjectURL(blob);
+		a.href = url;
+		a.download = fileName;
+		a.click();
+		window.URL.revokeObjectURL(url);
 	}
 	
 	function loadLayout(){
 		
-		//load nodes from json file
-		//TODO
+		input = document.getElementById('fileinput');
+		
+		file = input.files[0];
+		fr = new FileReader();
+		fr.onload = receivedText;
+		fr.readAsText(file);
+	
+		function receivedText(e) {
+			lines = e.target.result;
+			var newArr = JSON.parse(JSON.parse(lines));
+			boxes = newArr;
+			
+			//set id properly
+			var maxID = 0;
+			for(var k=0; k < boxes.length; k++){
+				if(boxes[k].id > maxID) maxID = boxes[k].id;
+			}
+			identity = maxID+1;
+		}
 		
 		//tell program to redraw
 		invalidate();
