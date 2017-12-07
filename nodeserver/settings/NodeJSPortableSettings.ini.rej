@@ -1,0 +1,9 @@
+diff a/Data/settings/NodeJSPortableSettings.ini b/Data/settings/NodeJSPortableSettings.ini	(rejected hunks)
+@@ -1,5 +1,5 @@
+ [NodeJSPortableSettings]
+ LastDrive=C:
+-LastDirectory=\Users\Alex\Desktop\S-E-329-project-2
++LastDirectory=\Users\Ryder\Documents\S-E-329-Project-2
+ [PortableApps.comLauncherLastRunEnvironment]
+-PAL:LastPortableAppsBaseDir=C:\Users\Alex
++PAL:LastPortableAppsBaseDir=C:\Users\Ryder

@@ -5,6 +5,9 @@ $(document).ready(function () {
     //1 = admin
     //2 = general user
     var userMode = 2;
+	
+	var socket = io.connect('http://localhost:4000');
+	var accountID;
 
     //webserver ip: 192.168.27.32
     //light1 ip: 192.168.27.31
@@ -140,20 +143,26 @@ $(document).ready(function () {
         styleBorderTop = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderTopWidth'], 10) || 0;
     }
 
-    function changeUser() {
+    function changeUser(username1) {
         if (userMode == 1) {
             document.getElementById("floatingbar").hidden = false;
             document.getElementById("login").hidden = true;
+			document.getElementById("addUserDiv").hidden = false;
             document.getElementById("accountInfo").hidden = false;
-            document.getElementById("currentUser").val = document.getElementById("username").value;
+            myHeader.innerText = username1;
+			document.getElementById("username").value = "";
+			document.getElementById("password").value = "";
             canvas.onmousedown = myAdminDown;
             canvas.onmouseup = myAdminUp;
         }
         else if (userMode == 2) {
             document.getElementById("floatingbar").hidden = true;
             document.getElementById("login").hidden = true;
+			document.getElementById("addUserDiv").hidden = true;
             document.getElementById("accountInfo").hidden = false;
-            document.getElementById("currentUser").val = document.getElementById("username").value;
+            myHeader.innerText = username1;
+			document.getElementById("username").value = "";
+			document.getElementById("password").value = "";
             canvas.onmousedown = myDown;
             canvas.onmouseup = myUp;
             mode = "Mouse";
@@ -483,12 +492,65 @@ $(document).ready(function () {
 	///////////////////////////////////////////////////////*/
 	
 	$("#loginButton").click(function () {
+		content.hidden = false;
         var username1 = document.getElementById("username").value;
         var password1 = document.getElementById("password").value;
-        if (username1 == "admin") userMode = 1;
-        else userMode = 2;
-        changeUser();
-    });
+		socket.emit("login",username1+" "+password1);
+		socket.on("loginResponse", function(response){
+			console.log('accIDLogin' + response);
+  			if(response !== "Invalid username/password"){
+				if(response == "admin"){
+					console.log("admin");
+					userMode = 1;
+					changeUser(username1);
+					invalidate();
+				}
+				else{
+					console.log("regular");
+					userMode = 2;
+					changeUser(username1);
+					invalidate();
+				}
+  			}
+  			else{
+				console.log("error while logging in");
+  			}
+		});
+	});
+	
+	$("#logoutButton").click(function () {
+		content.hidden = true;
+		userMode == 1;
+		document.getElementById("floatingbar").hidden = true;
+        document.getElementById("login").hidden = false;
+		document.getElementById("addUserDiv").hidden = true;
+        document.getElementById("accountInfo").hidden = true;
+		document.getElementById("username").value = "";
+		document.getElementById("password").value = "";
+        canvas.onmousedown = "";
+        canvas.onmouseup = "";
+		invalidate();
+	});
+	
+	$("#addUser").click(function () {
+		
+		newUser.hidden = false;
+		invalidate();
+		
+	});
+	
+	$("#enterNewUser").click(function () {
+		
+		newUser.hidden = true;
+		var username1 = document.getElementById("newUsernameInput").value;
+        var password1 = document.getElementById("newPasswordInput").value;
+		socket.emit('signUp',username1, password1);
+		socket.on("signupResponse",function(response){
+        console.log(response);
+		});
+		invalidate();
+		
+	});
 
     $("#switchUser").click(function () {
         if (userMode == 2) userMode = 1;

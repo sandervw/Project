@@ -7,6 +7,9 @@
 <!-- JQuery UI Stylesheet Import -->
 <link rel="stylesheet" href="js\jquery-ui-1.12.1\jquery-ui.css"/>
 
+<!-- Node server -->
+<script src="http://localhost:5000/socket.io/socket.io.js"></script>
+
 <!-- JQuery Javascript -->
 <script src="js\jquery-3.1.1.min.js"></script>
 <!-- JQuery UI Javascript -->
@@ -24,23 +27,28 @@
 	<!-- Banner -->
     <div id="banner" class="container-fluid">
         <div class="row">
-            <h1>Arndorfer Industries</h1>
-			<input type="button" id="switchUser" value="SwitchUser" class="btn btn-default"/>
-			<input type='file' id='fileinput' src="floorData.fd">
-			<input type='button' id='load' value='Load'/>
+			<div class="col-xs-9">
+				<h1>Arndorfer Industries</h1>
+			</div>
+			<div class="col-xs-3" id="addUserDiv" hidden="true" style="padding-top: 11px; color: #000000">
+				<input type="button" id="addUser" value="Add User" class="btn btn-default" />
+			</div>
+			<input type="button" id="switchUser" value="SwitchUser" class="btn btn-default" hidden="true"/>
+			<input type='file' id='fileinput' src="floorData.fd" hidden="true">
+			<input type='button' id='load' value='Load' hidden="true"/>
         </div>
     </div>
 	
 	<!-- Login -->
 	<div id="login" class="container-fluid">
         <div class="row">
-			<div class="col-xs-5" style="padding-top: 15px;">
-				<input type="text" id="username" value="Username" style="color: #000000"/>
+			<div class="col-xs-5" style="padding-top: 16px;">
+				<input type="text" id="username" placeholder="Username" style="color: #000000"/>
 			</div>
-			<div class="col-xs-5" style="padding-top: 15px;">
-				<input type="text" id="password" value="Password" style="color: #000000"/>
+			<div class="col-xs-5" style="padding-top: 16px;">
+				<input type="text" id="password" placeholder="Password" style="color: #000000"/>
 			</div>
-			<div class="col-xs-2" style="padding-top: 15px; color: #000000">
+			<div class="col-xs-2" style="padding-top: 11px; color: #000000">
 				<input type="button" id="loginButton" value="Login" class="btn btn-default"/>
 			</div>
         </div>
@@ -49,17 +57,20 @@
 	<!-- Holder for account info once a user has logged in -->
 	<div id="accountInfo" class="container-fluid" hidden="true">
         <div class="row">
-			<div class="col-xs-5" style="padding-top: 3px;">
+			<div class="col-xs-5" style="padding-top: 0px;">
 				<h3>Current User:</h3>
 			</div>
-			<div class="col-xs-7" style="padding-top: 3px;">
-				<h3 id="currentUser">RyanA</h3>
+			<div class="col-xs-4" style="padding-top: 0px;">
+				<h3 id="myHeader"></h3>
+			</div>
+			<div class="col-xs-2" style="padding-top: 13px; color: #000000">
+				<input type="button" id="logoutButton" value="Logout" class="btn btn-default"/>
 			</div>
         </div>
     </div>
 
 	<!-- Main canvas for floor plan and lights -->
-	<div class="container-fluid no-pad" id="content">
+	<div class="container-fluid no-pad" id="content" hidden="true">
 		<canvas id="canvas" style="padding-left: 5px;padding-top: 5px;">
 		</div>
 	</div>
@@ -97,6 +108,32 @@
 		<div class="row" style="padding-left: 5px;padding-top: 5px;">
 			<div class="col-xs-12" >
 				<input type="button" id="enterInfo_Button" value="Enter" class="btn btn-default"/>
+			</div>
+		</div>
+	</div>
+	
+	<!-- New User container -->
+	<div class="container-fluid no-pad" id="newUser" hidden="true">
+		<div class="row">
+			<div class="col-xs-12">
+				<h3>Enter New Account Info:</h3>
+			</div>
+		</div>
+		<div class="row" id="enterNewUsername" style="padding-left: 5px;padding-top: 5px;">
+			<div class="col-xs-12">
+				<Label>Username: </label>
+				<input id="newUsernameInput" type="text"></input>
+			</div>
+		</div>
+		<div class="row" id="enterNewPassword" style="padding-left: 5px;padding-top: 5px;"> 
+			<div class="col-xs-12">
+				<Label>Password: </label>
+				<input id="newPasswordInput" type="text"></input>
+			</div>
+		</div>
+		<div class="row" style="padding-left: 5px;padding-top: 5px;">
+			<div class="col-xs-12" >
+				<input type="button" id="enterNewUser" value="Create User" class="btn btn-default"/>
 			</div>
 		</div>
 	</div>

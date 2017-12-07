@@ -75,6 +75,15 @@ html{
 	z-index:100;
 }
 
+#newUser
+{
+	position:absolute;  
+	width:310px;height:180px;top:23%;right:45%;  
+	background-color:rgba(256,256,256,0.6);
+	border:2px solid #2266AA;  
+	z-index:100;
+}
+
 
 #display{
   background-color: #eeeeee;
