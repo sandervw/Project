@@ -20,11 +20,42 @@ $(document).ready(function () {
 		console.log("message recieved from server");
         console.log(e.data);
 		
+		var ip2 = e.data.substr(0, 13);
+		var lightnum = e.data.charAt(13);
+		var flag = e.data.charAt(14);
+		
+		console.log(boxes);
+		
+		console.log(ip2 + "_" + lightnum + "_" + flag)
+		
+		for(var k=0; k < boxes.length; k++){
+			if(boxes[k].ip == ip2){
+				var isFound = false;
+				for(var j=0; j < boxes[k].lines.length; j++){
+					for(var l = 0; l < boxes.length; l++){
+						if(boxes[l].id == boxes[k].lines[j].toname && boxes[l].ip == lightnum){
+							console.log(boxes[l]);
+							if(flag == 'T') boxes[l].isLit = true;
+							else boxes[l].isLit = false;
+							isFound = true;
+							break;
+						}	
+					}
+					if(isFound)break;
+				}
+			}
+		}
+		
 		//192.168.27.340T - on - ip_relaynum_status
 		//192.168.27.340F - off
 		invalidate();
     };
 
+	//websocket.onclose = function (e){
+		
+		//websocket.send("chainsawclose");
+		
+	//}
 
     var identity = 0;
     var mode;
@@ -217,41 +248,6 @@ $(document).ready(function () {
         return false;
     }
 
-    function isinline(x, y) {
-        //Also sets mySel
-        clear(gctx); // clear the ghost canvas from its last use
-        //Is it a box?
-        for (var i = boxes.length - 1; i >= 0; i--) {
-            //Draw lines
-            for (var j = 0; j < boxes[i].lines.length; j++) {
-                //drawshape(gctx, boxes[i], 'black');
-                //Draw all lines
-                var source = boxes[i];
-                var dest = findBoxByName(source.lines[j].toname);
-                gctx.beginPath();
-                gctx.moveTo(source.midx, source.midy);
-                gctx.lineTo(dest.midx, dest.midy);
-                gctx.strokeStyle = '#000000';
-                gctx.lineWidth = 10;
-                gctx.stroke();
-                gctx.closePath();
-
-                // get image data at the mouse x,y pixel
-                var imageData = gctx.getImageData(x, y, 1, 1);
-                var index = (x + y * imageData.width) * 4;
-
-                // if the mouse pixel exists
-                if (imageData.data[3] > 0) {
-                    mySel = boxes[i].lines[j];
-                    mySelIndex = i;
-                    clear(gctx);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     function myDown(e) {
         getMouse(e);
         if (isinbox(mx, my)) {
@@ -259,8 +255,7 @@ $(document).ready(function () {
             offsety = my - mySel.y;
             mySel.x = mx - offsetx;
             mySel.y = my - offsety;
-			if(mySel.isLit) mySel.isLit = false;
-			else mySel.isLit = true;
+			
 			var  connModule = findBoxByName(mySel.lines[0].toname);
 			var lightNum = mySel.ip;
 			var ipNum = connModule.ip;
@@ -542,8 +537,8 @@ $(document).ready(function () {
         this.midx = this.x + this.w / 2;
         this.midy = this.y + this.h / 2;
         this.fill = '#444444';
-        this.lines = []; //used for drawing lines and remebering connections
 		this.isLit = false;
+		this.lines = [];
         identity += 1;
     }
 	
@@ -675,7 +670,7 @@ $(document).ready(function () {
 	function saveLayout(){
 		
 		//iterate through box list and push config if it's a module/server
-		for(var k = 0; k < boxes[i].length; k++){
+		for(var k = 0; k < boxes.length; k++){
 			if(boxes[k].type == "module"){
 				//var config = "[comm|port|5167|call|chainsaw|][pins|but1|7|but2|13|relay1|11|relay2|16|][configs|debug|1|]"
 				//websocket.send(config);
@@ -690,6 +685,7 @@ $(document).ready(function () {
 		document.body.appendChild(a);
 		a.style = "display: none";  
 		var json = JSON.stringify(data);
+		json = json.concat("\n" + canvas.width + "\n" + canvas.height);
 		blob = new Blob([json], {type: "octet/stream"});
 		url = window.URL.createObjectURL(blob);
 		a.href = url;
@@ -709,15 +705,26 @@ $(document).ready(function () {
 	
 		function receivedText(e) {
 			lines = e.target.result;
-			var newArr = JSON.parse(JSON.parse(lines));
+			lineArr = lines.split("\n");
+			var newArr = JSON.parse(JSON.parse(lineArr[0]));
 			boxes = newArr;
+			
+			aspectWidth = lineArr[1];
+			aspectHeight = lineArr[2];
+			thisWidth = canvas.width;
+			thisHeight = canvas.height;
 			
 			//set id properly
 			var maxID = 0;
 			for(var k=0; k < boxes.length; k++){
+				boxes[k].x = boxes[k].x * thisWidth/aspectWidth;
+				boxes[k].midx = boxes[k].x + boxes[k].w/2;
+				boxes[k].y = boxes[k].y * thisHeight/aspectHeight;
+				boxes[k].midy = boxes[k].y + boxes[k].h/2;
 				if(boxes[k].id > maxID) maxID = boxes[k].id;
 			}
 			identity = maxID+1;
+			console.log(boxes);
 		}
 		
 		//tell program to redraw
